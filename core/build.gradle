@@ -54,7 +54,7 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
                 groupId = 'com.github.francoisrochefort'
-                artifactId = 'e-trak core'
+                artifactId = 'e-trak-core'
                 version = '1.0'
             }
         }
