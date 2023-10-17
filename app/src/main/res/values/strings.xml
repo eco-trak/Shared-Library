@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Shared-Library</string>
+    <string name="shutdown_sequence_started">Shutdown sequence started</string>
+    <string name="cancel">Cancel</string>
+</resources>
