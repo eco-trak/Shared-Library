@@ -12,7 +12,7 @@ class ScaleEmulator : Device {
             while (true) {
                 emit(
                     Device.Message(
-                        code = "AD38",
+                        code = Code.BoomAngle.value,
                         params = listOf(param.toString())
                     )
                 )

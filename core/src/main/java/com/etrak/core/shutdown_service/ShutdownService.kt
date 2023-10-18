@@ -80,10 +80,10 @@ class ShutdownService : LifecycleService() {
                 override fun onValueChanged(value: Gpio.State) {
 
                     // If the power is off then start the timer
-                    if (value == Gpio.State.Low) timer.start()
+                    if (value == Gpio.State.High) timer.start()
 
                     // If the power goes on then stop the timer
-                    else if(value == Gpio.State.High) timer.stop()
+                    else if(value == Gpio.State.Low) timer.stop()
                 }
             }
         )
