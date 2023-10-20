@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-const val TAG = "eco-trak MainViewModel"
+const val TAG = "e-trak MainViewModel"
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -44,10 +44,10 @@ class MainViewModel @Inject constructor(
     // Collect scale events
     init {
 
-        scale.start()
-
         viewModelScope.launch {
             scaleEvents.collect { event ->
+                Log.d(TAG, "MainViewMode: collecting event: $event")
+
                 when (event) {
                     is Scale.Event.OnCabAngle -> cabAngle = event.angle
                     is Scale.Event.OnBoomAngle -> boomAngle = event.angle

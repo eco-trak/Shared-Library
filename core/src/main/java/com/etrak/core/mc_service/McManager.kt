@@ -8,6 +8,7 @@ import android.util.Log
 import com.etrak.core.mc_service.McService.Companion.ACTION_CONNECTION_FAILED
 import com.etrak.core.mc_service.McService.Companion.ACTION_CONNECTION_SUCCEEDED
 import com.etrak.core.mc_service.McService.Companion.ACTION_EMULATOR_MODE_ENABLED
+import com.etrak.core.mc_service.McService.Companion.ACTION_DEVICE_UNPLUGGED
 import com.etrak.core.mc_service.McService.Companion.EXTRA_MESSAGE_CODE
 import com.etrak.core.mc_service.McService.Companion.EXTRA_MESSAGE_PARAMS
 import com.etrak.core.mc_service.McService.Companion.EXTRA_SET_MODE_MODE
@@ -40,6 +41,8 @@ class McManager(
                 _showFailure.value = false
             else if (intent?.action == ACTION_EMULATOR_MODE_ENABLED)
                 _showFailure.value = false
+            else if (intent?.action == McService.ACTION_DEVICE_UNPLUGGED)
+                _showFailure.value = true
         }
     }
 
@@ -128,6 +131,7 @@ class McManager(
                 addAction(ACTION_CONNECTION_FAILED)
                 addAction(ACTION_CONNECTION_SUCCEEDED)
                 addAction(ACTION_EMULATOR_MODE_ENABLED)
+                addAction(ACTION_DEVICE_UNPLUGGED)
             }
         )
 

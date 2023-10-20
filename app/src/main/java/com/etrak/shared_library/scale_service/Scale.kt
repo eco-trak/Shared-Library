@@ -48,7 +48,7 @@ class Scale(
 
 //    fun runEmulator() = mcManager.setMode(McService.Mode.Emulator)
 
-    fun start() {
+//    fun start() {
 //        mcManager.send(Device.Message(code = "CD00", params = emptyList()))
-    }
+//    }
 }

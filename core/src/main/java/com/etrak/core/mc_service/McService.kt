@@ -37,7 +37,7 @@ abstract class McService(
         const val ACTION_CONNECTION_FAILED = "com.etrak.core.mc_service.McService.ACTION_CONNECTION_FAILED"
         const val ACTION_CONNECTION_SUCCEEDED = "com.etrak.core.mc_service.McService.ACTION_CONNECTION_SUCCEEDED"
         const val ACTION_EMULATOR_MODE_ENABLED = "com.etrak.core.mc_service.McService.ACTION_EMULATOR_MODE_ENABLED"
-        const val ACTION_MC_UNPLUGGED = "com.etrak.core.mc_service.McService.ACTION_MC_UNPLUGGED"
+        const val ACTION_DEVICE_UNPLUGGED = "com.etrak.core.mc_service.McService.ACTION_MC_UNPLUGGED"
 
         const val EXTRA_SET_MODE_MODE = "com.etrak.core.mc_service.McService.EXTRA_SET_MODE_MODE"
 
@@ -98,7 +98,7 @@ abstract class McService(
                 UsbManager.ACTION_USB_DEVICE_DETACHED -> {
                     if (mode.value == Mode.Normal) {
                         setMode(Mode.StandBy)
-                        sendBroadcast(Intent(ACTION_MC_UNPLUGGED)) // Want to switch mode?
+                        sendBroadcast(Intent(ACTION_DEVICE_UNPLUGGED))
                     }
                 }
             }

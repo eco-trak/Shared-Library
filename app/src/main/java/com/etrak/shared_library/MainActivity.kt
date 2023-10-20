@@ -18,10 +18,17 @@ import com.etrak.shared_library.ui.theme.SharedLibraryTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import androidx.compose.runtime.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.etrak.core.mc_service.McManager
 import com.etrak.core.mc_service.McService
 import com.etrak.shared_library.scale_service.DebugDialog
 import com.etrak.shared_library.scale_service.Scale
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -47,15 +54,17 @@ class MainActivity : ComponentActivity() {
             )
         }
 
+        // Whenever the service succeeds in connecting to the MC then send a start command
 //        lifecycleScope.launch {
 //            repeatOnLifecycle(Lifecycle.State.STARTED) {
-//                val events = scale.notifications
-//                    .shareIn(lifecycleScope, SharingStarted.Eagerly)
-//                events.collect { notification ->
-//                    when (notification) {
-//                        is McManager.Notification.OnConnectionSucceeded -> {
-//                            scale.start()
-//                        }
+//                val notifications = scale.notifications
+//                    .shareIn(
+//                        lifecycleScope,
+//                        SharingStarted.Eagerly
+//                    )
+//                notifications.collect { notification ->
+//                        when (notification) {
+//                        is McManager.Notification.OnConnectionSucceeded -> scale.start()
 //                        else -> Unit
 //                    }
 //                }
@@ -83,8 +92,8 @@ class MainActivity : ComponentActivity() {
                     if (showDebugDialog)
                         DebugDialog(
                             onRunEmulator = {
-                                mcManager.setMode(McService.Mode.Emulator)
 //                                scale.runEmulator()
+                                mcManager.setMode(McService.Mode.Emulator)
                             }
                         )
 
