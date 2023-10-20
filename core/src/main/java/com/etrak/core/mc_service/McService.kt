@@ -79,6 +79,8 @@ abstract class McService(
     // When the connection status changes then switch between flows
     @OptIn(ExperimentalCoroutinesApi::class)
     val messages = mode.flatMapLatest { mode ->
+        Log.d(TAG, "McService: messages = mode.flatMapLatest { mode($mode) ->")
+
         device = when (mode) {
             Mode.Normal -> normal
             Mode.StandBy -> standby
@@ -90,6 +92,8 @@ abstract class McService(
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            Log.d(TAG, "McService: onReceive(${intent.action})")
+
             when (intent.action) {
                 UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
                     if (mode.value == Mode.StandBy)
@@ -114,7 +118,7 @@ abstract class McService(
             .build()
 
     private fun setMode(mode: Mode) {
-        Log.d(TAG, "McService: setMode")
+        Log.d(TAG, "McService: setMode($mode)")
 
         when (mode) {
             Mode.Normal -> {
@@ -136,6 +140,7 @@ abstract class McService(
     }
 
     private fun onStart() {
+        Log.d(TAG, "McService: onStart")
 
         // Create the notification channel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -151,6 +156,8 @@ abstract class McService(
         // Broadcast messages emitted from the device
         lifecycleScope.launch {
             messages.collect { msg ->
+//                Log.d(TAG, "McService:  messages.collect { msg($msg) ->")
+
                 sendBroadcast(
                     Intent(ON_MESSAGE).apply {
                         putExtra(EXTRA_MESSAGE_CODE, msg.code)
@@ -162,9 +169,9 @@ abstract class McService(
 
         // Update the notification whenever the connection status changes
         lifecycleScope.launch {
-            mode.collect { connectionStatus ->
+            mode.collect { mode ->
                 val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                manager.notify(NOTIFICATION_ID, createNotification(connectionStatus))
+                manager.notify(NOTIFICATION_ID, createNotification(mode))
             }
         }
 
@@ -188,16 +195,21 @@ abstract class McService(
     }
 
     private fun onSend(msg: Device.Message) {
+        Log.d(TAG, "McService: onSend($msg)")
+
         device.send(msg)
     }
 
     private fun onStop() {
+        Log.d(TAG, "McService: onStop")
+
         unregisterReceiver(receiver)
         stopForeground(true)
         stopSelf()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d(TAG, "McService: onStartCommand(${intent?.action})")
 
         // Dispatch the action to its handler
         when (intent?.action) {

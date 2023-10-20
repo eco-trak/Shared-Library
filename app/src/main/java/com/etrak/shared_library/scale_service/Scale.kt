@@ -1,10 +1,13 @@
 package com.etrak.shared_library.scale_service
 
+import android.util.Log
 import com.etrak.core.mc_service.Device
 import com.etrak.core.mc_service.McManager
 import com.etrak.core.mc_service.McService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+
+private const val TAG = "e-trak scale"
 
 enum class Code(val value: String) {
     BoomAngle(value = "AD08"),
@@ -28,10 +31,12 @@ class Scale(
         data class OnUnknown(val msg: Device.Message) : Event()
     }
 
-//    val notifications by mcManager::notifications
-//    val showDebugDialog by mcManager::showDebugDialog
+    val notifications by mcManager::notifications
+    val showDebugDialog by mcManager::showDebugDialog
 
     val events: Flow<Event> by lazy {
+        Log.d(TAG, "Scale: events: Flow<Event> by lazy {")
+
         mcManager.messages.map { message ->
             when (message.code) {
 
@@ -46,9 +51,15 @@ class Scale(
         }
     }
 
-//    fun runEmulator() = mcManager.setMode(McService.Mode.Emulator)
+    fun runEmulator() {
+        Log.d(TAG, "Scale: runEmulator")
 
-//    fun start() {
-//        mcManager.send(Device.Message(code = "CD00", params = emptyList()))
-//    }
+        mcManager.setMode(McService.Mode.Emulator)
+    }
+
+    fun start() {
+        Log.d(TAG, "Scale: start")
+
+        mcManager.send(Device.Message(code = "CD00", params = emptyList()))
+    }
 }

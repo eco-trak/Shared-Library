@@ -46,7 +46,7 @@ class MainViewModel @Inject constructor(
 
         viewModelScope.launch {
             scaleEvents.collect { event ->
-                Log.d(TAG, "MainViewMode: collecting event: $event")
+//                Log.d(TAG, "MainViewMode: collecting event: $event")
 
                 when (event) {
                     is Scale.Event.OnCabAngle -> cabAngle = event.angle
@@ -54,7 +54,9 @@ class MainViewModel @Inject constructor(
                     is Scale.Event.OnCalibUICabAngle -> calibUICabAngle = event.angle
                     is Scale.Event.OnProcessAngle -> processAngle = event.angle
                     is Scale.Event.OnCalibUIBoomAngle -> calibUIBoomAngle = event.angle
-                    is Scale.Event.OnUnknown -> Log.d(TAG, "Unknown message: ${event.msg}")
+                    is Scale.Event.OnUnknown -> {
+//                        Log.d(TAG, "Unknown message: ${event.msg}")
+                    }
                 }
             }
         }

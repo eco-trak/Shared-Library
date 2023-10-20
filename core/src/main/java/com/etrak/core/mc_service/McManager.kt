@@ -30,23 +30,24 @@ class McManager(
         object OnEmulatorModeEnabled : Notification()
     }
 
-    private val _showFailure = MutableStateFlow(false)
-    val showDebugDialog = _showFailure.asStateFlow()
+    private val _showDebugDialog = MutableStateFlow(false)
+    val showDebugDialog = _showDebugDialog.asStateFlow()
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == ACTION_CONNECTION_FAILED)
-                _showFailure.value = true
-            else if (intent?.action == ACTION_CONNECTION_SUCCEEDED)
-                _showFailure.value = false
-            else if (intent?.action == ACTION_EMULATOR_MODE_ENABLED)
-                _showFailure.value = false
-            else if (intent?.action == McService.ACTION_DEVICE_UNPLUGGED)
-                _showFailure.value = true
+            Log.d(TAG, "McManager: showDebugDialog receiver(${intent?.action})")
+
+            when (intent?.action) {
+                ACTION_CONNECTION_FAILED -> _showDebugDialog.value = true
+                ACTION_CONNECTION_SUCCEEDED -> _showDebugDialog.value = false
+                ACTION_EMULATOR_MODE_ENABLED -> _showDebugDialog.value = false
+                ACTION_DEVICE_UNPLUGGED -> _showDebugDialog.value = true
+            }
         }
     }
 
     fun send(msg: Device.Message) {
+        Log.d(TAG, "McManager: send($msg)")
 
         // Send the message to the service
         Intent(context, service).apply {
@@ -59,16 +60,16 @@ class McManager(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val messages = callbackFlow {
-        Log.d(TAG, "McManager: messages")
+        Log.d(TAG, "McManager: messages = callbackFlow {")
 
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-
                 val msg = Device.Message(
                     code = intent.getStringExtra(EXTRA_MESSAGE_CODE)!!,
                     params = intent.getStringArrayExtra(EXTRA_MESSAGE_PARAMS)!!.toList()
                 )
-                Log.d(TAG, "McManager: message: onReceive (msg=$msg)")
+//                Log.d(TAG, "McManager: message: onReceive (msg=$msg)")
+
                 trySend(msg)
             }
         }
@@ -86,12 +87,12 @@ class McManager(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val notifications = callbackFlow {
-        Log.d(TAG, "McManager: events")
+        Log.d(TAG, "McManager: notifications = callbackFlow {")
 
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
 
-                Log.d(TAG, "McManager: events: onReceive")
+                Log.d(TAG, "McManager: notifications receiver(${intent.action})")
                 when (intent.action) {
                     ACTION_CONNECTION_SUCCEEDED -> trySend(Notification.OnConnectionSucceeded)
                     ACTION_EMULATOR_MODE_ENABLED -> trySend(Notification.OnEmulatorModeEnabled)
@@ -106,7 +107,7 @@ class McManager(
         }
 
         awaitClose {
-            Log.d(TAG, "McManager: events: awaitClose")
+            Log.d(TAG, "McManager: notifications: awaitClose")
             context.unregisterReceiver(receiver)
         }
     }
@@ -122,7 +123,6 @@ class McManager(
     }
 
     fun start() {
-
         Log.d(TAG, "McManager: start")
 
         context.registerReceiver(

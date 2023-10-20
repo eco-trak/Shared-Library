@@ -3,6 +3,7 @@ package com.etrak.shared_library
 import android.Manifest
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,18 +31,20 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 
+private const val TAG = "e-trak MainActivity"
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @Inject
-//    lateinit var scale: Scale
-    lateinit var mcManager: McManager
+    lateinit var scale: Scale
 
     @Inject
     lateinit var shutdownManager: ShutdownManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "MainActivity: onCreate")
 
         // Request permission to post notifications
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -55,21 +58,23 @@ class MainActivity : ComponentActivity() {
         }
 
         // Whenever the service succeeds in connecting to the MC then send a start command
-//        lifecycleScope.launch {
-//            repeatOnLifecycle(Lifecycle.State.STARTED) {
-//                val notifications = scale.notifications
-//                    .shareIn(
-//                        lifecycleScope,
-//                        SharingStarted.Eagerly
-//                    )
-//                notifications.collect { notification ->
-//                        when (notification) {
-//                        is McManager.Notification.OnConnectionSucceeded -> scale.start()
-//                        else -> Unit
-//                    }
-//                }
-//            }
-//        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                val notifications = scale.notifications
+                    .shareIn(
+                        lifecycleScope,
+                        SharingStarted.Eagerly
+                    )
+                notifications.collect { notification ->
+                    Log.d(TAG, "MainActivity: notifications.collect { notification($notification) ->")
+
+                    when (notification) {
+                        is McManager.Notification.OnConnectionSucceeded -> scale.start()
+                        else -> Unit
+                    }
+                }
+            }
+        }
 
         setContent {
             SharedLibraryTheme {
@@ -78,8 +83,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background
                 ) {
                     // Observe the scale
-//                    val showDebugDialog by scale.showDebugDialog.collectAsState(initial = false)
-                    val showDebugDialog by mcManager.showDebugDialog.collectAsState(initial = false)
+                    val showDebugDialog by scale.showDebugDialog.collectAsState(initial = false)
 
                     // Observe the shutdown manager
                     val showCountdown by shutdownManager.showCountdownSequence.collectAsState(initial = false)
@@ -92,8 +96,7 @@ class MainActivity : ComponentActivity() {
                     if (showDebugDialog)
                         DebugDialog(
                             onRunEmulator = {
-//                                scale.runEmulator()
-                                mcManager.setMode(McService.Mode.Emulator)
+                                scale.runEmulator()
                             }
                         )
 
