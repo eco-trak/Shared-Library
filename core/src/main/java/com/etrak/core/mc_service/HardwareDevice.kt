@@ -10,15 +10,13 @@ import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 
 class HardwareDevice(private val context: Context) : Device {
 
-    var connected = MutableStateFlow(false)
+    class NoUsbDriverAvailableException : Exception()
 
-    lateinit var port: UsbSerialPort
-        private set
+    private lateinit var port: UsbSerialPort
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val messages = callbackFlow {
@@ -94,7 +92,7 @@ class HardwareDevice(private val context: Context) : Device {
         val usbManager = context.getSystemService(USB_SERVICE) as UsbManager?
         val availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
         if (availableDrivers.isEmpty()) {
-            throw McService.NoUsbDriverAvailableException()
+            throw NoUsbDriverAvailableException()
         }
 
         // Open a connection to the first available driver.
@@ -122,11 +120,8 @@ class HardwareDevice(private val context: Context) : Device {
 
         port = usbSerialPort
 
-        connected.value = true
     }
 
     override fun disconnect() {
-
-        connected.value = false
     }
 }

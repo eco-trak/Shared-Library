@@ -2,4 +2,6 @@
     <string name="app_name">Shared-Library</string>
     <string name="shutdown_sequence_started">Shutdown sequence started</string>
     <string name="cancel">Cancel</string>
+    <string name="debug">Debug</string>
+    <string name="set_emulator_mode">Set emulator mode</string>
 </resources>

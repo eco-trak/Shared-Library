@@ -11,20 +11,22 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 class AppModule {
 
     @Provides
-    fun shutdownManager(
+    fun provideShutdownManager(
         @ApplicationContext context: Context
     ) = ShutdownManager(context).apply {
         start(ShutdownService.DEFAULT_DURATION)
     }
 
     @Provides
-    fun mcManager(@ApplicationContext context: Context) = McManager(
+    @Singleton
+    fun provideMcManager(@ApplicationContext context: Context) = McManager(
         context = context,
         service = ScaleService::class.java
     ).apply {

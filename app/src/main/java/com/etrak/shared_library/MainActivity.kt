@@ -18,9 +18,15 @@ import com.etrak.shared_library.ui.theme.SharedLibraryTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import androidx.compose.runtime.*
+import com.etrak.core.mc_service.McManager
+import com.etrak.core.mc_service.McService
+import com.etrak.shared_library.scale_service.DebugDialog
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var mcManager: McManager
 
     @Inject
     lateinit var shutdownManager: ShutdownManager
@@ -45,15 +51,26 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    // Observe the shutdown service
-                    val show by shutdownManager.showCountdownSequence.collectAsState(initial = false)
+                    // Observe the mc manager
+                    val showDebugDialog by mcManager.showDebugDialog.collectAsState(initial = false)
+
+                    // Observe the shutdown manager
+                    val showCountdown by shutdownManager.showCountdownSequence.collectAsState(initial = false)
                     val countdown by shutdownManager.countdown.collectAsState(initial = DEFAULT_DURATION)
 
                     // Show the main screen
                     MainScreen()
 
-                    // Show the countdown dialog
-                    if (show) {
+                    // Show debug window
+                    if (showDebugDialog)
+                        DebugDialog(
+                            onSetEmulatorMode = {
+                                mcManager.setMode(McService.Mode.Emulator)
+                            }
+                        )
+
+                    // Show the countdown dialog on top
+                    if (showCountdown) {
                         ShutdownSequence(
                             onCancelClick = {
                                 shutdownManager.cancelShutdownSequence()

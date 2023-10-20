@@ -3,7 +3,7 @@
     <string name="monitoring_accessory_power">Monitoring accessory power</string>
     <string name="shutting_down_system">Shutting down system in %d</string>
     <string name="channel_name">E-Trak MC service</string>
-    <string name="detached">Detached</string>
-    <string name="attached">Attached</string>
-    <string name="connected">Connected</string>
+    <string name="mode_standby">Stand by</string>
+    <string name="mode_emulator">Emulator</string>
+    <string name="mode_normal">Normal</string>
 </resources>

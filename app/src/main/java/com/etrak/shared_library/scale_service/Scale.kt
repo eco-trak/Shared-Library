@@ -42,5 +42,7 @@ class Scale(
         }
     }
 
-    fun start() = mcManager.send(Device.Message(code = "CD00", params = emptyList()))
+    fun start() {
+//        mcManager.send(Device.Message(code = "CD00", params = emptyList()))
+    }
 }

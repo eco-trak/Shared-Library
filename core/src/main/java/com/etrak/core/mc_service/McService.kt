@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.hardware.usb.UsbManager
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
@@ -16,6 +17,9 @@ import com.etrak.core.R
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.security.InvalidParameterException
+
+private const val TAG = "e-trak mc-service"
 
 abstract class McService(
 
@@ -26,9 +30,16 @@ abstract class McService(
     companion object {
 
         // Intents
-        const val ON_MESSAGE = "com.ecotrak.shared_library.ON_MESSAGE"
-        const val EXTRA_MESSAGE_CODE = "com.ecotrak.shared_library.EXTRA_MESSAGE_CODE"
-        const val EXTRA_MESSAGE_PARAMS = "com.ecotrak.shared_library.EXTRA_MESSAGE_PARAMS"
+        const val ON_MESSAGE = "com.etrak.core.mc_service.McService.ON_MESSAGE"
+        const val EXTRA_MESSAGE_CODE = "com.etrak.core.mc_service.McService.EXTRA_MESSAGE_CODE"
+        const val EXTRA_MESSAGE_PARAMS = "com.etrak.core.mc_service.McService.EXTRA_MESSAGE_PARAMS"
+
+        const val ACTION_CONNECTION_FAILED = "com.etrak.core.mc_service.McService.ACTION_CONNECTION_FAILED"
+        const val ACTION_CONNECTION_SUCCEEDED = "com.etrak.core.mc_service.McService.ACTION_CONNECTION_SUCCEEDED"
+        const val ACTION_EMULATOR_MODE_ENABLED = "com.etrak.core.mc_service.McService.ACTION_EMULATOR_MODE_ENABLED"
+        const val ACTION_MC_UNPLUGGED = "com.etrak.core.mc_service.McService.ACTION_MC_UNPLUGGED"
+
+        const val EXTRA_SET_MODE_MODE = "com.etrak.core.mc_service.McService.EXTRA_SET_MODE_MODE"
 
         const val CHANNEL_ID = "mc_service"
         const val NOTIFICATION_ID = 1
@@ -37,63 +48,92 @@ abstract class McService(
     // Intent actions
     enum class Action {
         Start,
+        SetMode,
         Send,
         Stop
     }
 
-    enum class ConnectionStatus(@StringRes val resId: Int) {
-        Attached(resId = R.string.attached),
-        Detached(resId = R.string.detached),
-        Connected(resId = R.string.connected)
+    enum class Mode(val id: Int, @StringRes val resId: Int) {
+
+        StandBy(id = 1, resId = R.string.mode_standby),
+        Emulator(id = 2, resId = R.string.mode_emulator),
+        Normal(id = 3, resId = R.string.mode_normal);
+
+        fun toInt() = this.id
     }
 
-    class NoUsbDriverAvailableException : Exception()
-
-    private val receiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            when (intent.action) {
-
-                // Connect to mc when a device is attached
-                UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
-                    connectionStatus.value = ConnectionStatus.Attached
-                    try {
-                        hardware.connect()
-                    }
-                    catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-
-                // Disconnect the device when a device is detached
-                UsbManager.ACTION_USB_DEVICE_DETACHED -> {
-                    hardware.disconnect()
-                    connectionStatus.value = ConnectionStatus.Detached
-                }
-            }
-        }
+    private fun Int.toMode() = when (this) {
+        1 -> Mode.StandBy
+        2 -> Mode.Emulator
+        3 -> Mode.Normal
+        else -> throw InvalidParameterException()
     }
-    private val connectionStatus = MutableStateFlow(ConnectionStatus.Detached)
-    private val hardware: Device by lazy { HardwareDevice(this) }
+
+    private val mode = MutableStateFlow(Mode.StandBy)
+
+    private val standby by lazy { StandByMode() }
+    private val normal: Device by lazy { HardwareDevice(this) }
+
     private lateinit var device: Device
 
     // When the connection status changes then switch between flows
     @OptIn(ExperimentalCoroutinesApi::class)
-    val messages = connectionStatus.flatMapLatest { connectionStatus ->
-        device = when (connectionStatus) {
-            ConnectionStatus.Connected -> hardware
-            ConnectionStatus.Detached, ConnectionStatus.Attached -> emulator
+    val messages = mode.flatMapLatest { mode ->
+        device = when (mode) {
+            Mode.Normal -> normal
+            Mode.StandBy -> standby
+            Mode.Emulator -> emulator
         }
         device.messages
     }
     .shareIn(lifecycleScope, SharingStarted.Eagerly)
 
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
+                    if (mode.value == Mode.StandBy)
+                        setMode(Mode.Normal)
+                }
+                UsbManager.ACTION_USB_DEVICE_DETACHED -> {
+                    if (mode.value == Mode.Normal) {
+                        setMode(Mode.StandBy)
+                        sendBroadcast(Intent(ACTION_MC_UNPLUGGED)) // Want to switch mode?
+                    }
+                }
+            }
+        }
+    }
+
     // Build a notification according to a connection status
-    private fun createNotification(connectionStatus: ConnectionStatus) =
+    private fun createNotification(mode: Mode) =
         NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.usb)
             .setContentTitle(getString(R.string.content_title))
-            .setContentText(getString(connectionStatus.resId))
+            .setContentText(getString(mode.resId))
             .build()
+
+    private fun setMode(mode: Mode) {
+        Log.d(TAG, "McService: setMode")
+
+        when (mode) {
+            Mode.Normal -> {
+                try {
+                    normal.connect()
+                    this.mode.value = mode
+                    sendBroadcast(Intent(ACTION_CONNECTION_SUCCEEDED))
+                }
+                catch (e: Exception) {
+                    sendBroadcast(Intent(ACTION_CONNECTION_FAILED))
+                }
+            }
+            Mode.Emulator -> {
+                sendBroadcast(Intent(ACTION_EMULATOR_MODE_ENABLED))
+                this.mode.value = mode
+            }
+            else -> this.mode.value = mode
+        }
+    }
 
     private fun onStart() {
 
@@ -106,13 +146,6 @@ abstract class McService(
             )
             val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
-        }
-
-        // When the hardware device succeeded in opening to the USB port then update the connection status
-        lifecycleScope.launch {
-            (hardware as HardwareDevice).connected.collect { connected ->
-                if (connected) connectionStatus.value = ConnectionStatus.Connected
-            }
         }
 
         // Broadcast messages emitted from the device
@@ -129,7 +162,7 @@ abstract class McService(
 
         // Update the notification whenever the connection status changes
         lifecycleScope.launch {
-            connectionStatus.collect { connectionStatus ->
+            mode.collect { connectionStatus ->
                 val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 manager.notify(NOTIFICATION_ID, createNotification(connectionStatus))
             }
@@ -143,15 +176,15 @@ abstract class McService(
         }
 
         // Connect to the mc
-        try {
-            hardware.connect()
-        }
-        catch (e: Exception) {
-            e.printStackTrace()
-        }
+        setMode(Mode.Normal)
 
         // Init. the service
-        startForeground(1, createNotification(connectionStatus.value))
+        startForeground(1, createNotification(mode.value))
+    }
+
+    private fun onSetMode(mode: Mode) {
+        Log.d(TAG, "McService: onSetMode")
+        setMode(mode)
     }
 
     private fun onSend(msg: Device.Message) {
@@ -169,6 +202,12 @@ abstract class McService(
         // Dispatch the action to its handler
         when (intent?.action) {
             Action.Start.name -> onStart()
+            Action.SetMode.name -> onSetMode(
+                intent.getIntExtra(
+                    EXTRA_SET_MODE_MODE,
+                    Mode.StandBy.toInt()
+                ).toMode()
+            )
             Action.Send.name -> onSend(
                 Device.Message(
                     intent.getStringExtra(EXTRA_MESSAGE_CODE)!!,
