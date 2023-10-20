@@ -4,11 +4,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.hardware.usb.UsbManager
 import android.util.Log
 import com.etrak.core.mc_service.McService.Companion.ACTION_CONNECTION_FAILED
 import com.etrak.core.mc_service.McService.Companion.ACTION_CONNECTION_SUCCEEDED
 import com.etrak.core.mc_service.McService.Companion.ACTION_EMULATOR_MODE_ENABLED
-import com.etrak.core.mc_service.McService.Companion.ACTION_DEVICE_UNPLUGGED
 import com.etrak.core.mc_service.McService.Companion.EXTRA_MESSAGE_CODE
 import com.etrak.core.mc_service.McService.Companion.EXTRA_MESSAGE_PARAMS
 import com.etrak.core.mc_service.McService.Companion.EXTRA_SET_MODE_MODE
@@ -27,7 +27,7 @@ class McManager(
 ) {
     sealed class Notification {
         object OnConnectionSucceeded: Notification()
-        object OnEmulatorModeEnabled : Notification()
+        object OnMcAttached: Notification()
     }
 
     private val _showDebugDialog = MutableStateFlow(false)
@@ -41,7 +41,7 @@ class McManager(
                 ACTION_CONNECTION_FAILED -> _showDebugDialog.value = true
                 ACTION_CONNECTION_SUCCEEDED -> _showDebugDialog.value = false
                 ACTION_EMULATOR_MODE_ENABLED -> _showDebugDialog.value = false
-                ACTION_DEVICE_UNPLUGGED -> _showDebugDialog.value = true
+                UsbManager.ACTION_USB_DEVICE_DETACHED -> _showDebugDialog.value = true
             }
         }
     }
@@ -95,14 +95,14 @@ class McManager(
                 Log.d(TAG, "McManager: notifications receiver(${intent.action})")
                 when (intent.action) {
                     ACTION_CONNECTION_SUCCEEDED -> trySend(Notification.OnConnectionSucceeded)
-                    ACTION_EMULATOR_MODE_ENABLED -> trySend(Notification.OnEmulatorModeEnabled)
+                    UsbManager.ACTION_USB_DEVICE_ATTACHED -> trySend(Notification.OnMcAttached)
                 }
             }
         }
 
         IntentFilter().apply {
             addAction(ACTION_CONNECTION_SUCCEEDED)
-            addAction(ACTION_EMULATOR_MODE_ENABLED)
+            addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
             context.registerReceiver(receiver, this)
         }
 
@@ -131,7 +131,8 @@ class McManager(
                 addAction(ACTION_CONNECTION_FAILED)
                 addAction(ACTION_CONNECTION_SUCCEEDED)
                 addAction(ACTION_EMULATOR_MODE_ENABLED)
-                addAction(ACTION_DEVICE_UNPLUGGED)
+//                addAction(ACTION_DEVICE_UNPLUGGED)
+                addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
             }
         )
 

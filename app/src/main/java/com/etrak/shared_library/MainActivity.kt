@@ -66,10 +66,15 @@ class MainActivity : ComponentActivity() {
                         SharingStarted.Eagerly
                     )
                 notifications.collect { notification ->
-                    Log.d(TAG, "MainActivity: notifications.collect { notification($notification) ->")
+                    Log.d(TAG, "MainActivity: notifications.collect { notification(${notification}) ->")
 
                     when (notification) {
                         is McManager.Notification.OnConnectionSucceeded -> scale.start()
+                        is McManager.Notification.OnMcAttached -> {
+
+                            // Not done automatically when running in emulator mode
+                            scale.setMode(McService.Mode.Normal)
+                        }
                         else -> Unit
                     }
                 }
@@ -96,7 +101,7 @@ class MainActivity : ComponentActivity() {
                     if (showDebugDialog)
                         DebugDialog(
                             onRunEmulator = {
-                                scale.runEmulator()
+                                scale.setMode(McService.Mode.Emulator)
                             }
                         )
 

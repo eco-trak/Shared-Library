@@ -51,10 +51,10 @@ class Scale(
         }
     }
 
-    fun runEmulator() {
+    fun setMode(mode: McService.Mode) {
         Log.d(TAG, "Scale: runEmulator")
 
-        mcManager.setMode(McService.Mode.Emulator)
+        mcManager.setMode(mode)
     }
 
     fun start() {
