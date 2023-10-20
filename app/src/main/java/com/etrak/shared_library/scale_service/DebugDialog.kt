@@ -15,7 +15,7 @@ import com.etrak.shared_library.R
 
 @Composable
 fun DebugDialog(
-    onSetEmulatorMode: () -> Unit
+    onRunEmulator: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = { },
@@ -29,7 +29,7 @@ fun DebugDialog(
                     text = stringResource(id = R.string.debug),
                     fontSize = 72.sp
                 )
-                Button(onClick = onSetEmulatorMode) {
+                Button(onClick = onRunEmulator) {
                     Text(text = stringResource(id = R.string.set_emulator_mode))
                 }
             }

@@ -1,4 +1,4 @@
-package com.etrak.shared_library.ui.shutdown_service
+package com.etrak.shared_library.shutdown_service
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.AlertDialog

@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import com.etrak.core.shutdown_service.ShutdownManager
 import com.etrak.core.shutdown_service.ShutdownService.Companion.DEFAULT_DURATION
-import com.etrak.shared_library.ui.shutdown_service.ShutdownSequence
+import com.etrak.shared_library.shutdown_service.ShutdownSequence
 import com.etrak.shared_library.ui.main.MainScreen
 import com.etrak.shared_library.ui.theme.SharedLibraryTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,11 +21,13 @@ import androidx.compose.runtime.*
 import com.etrak.core.mc_service.McManager
 import com.etrak.core.mc_service.McService
 import com.etrak.shared_library.scale_service.DebugDialog
+import com.etrak.shared_library.scale_service.Scale
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @Inject
+//    lateinit var scale: Scale
     lateinit var mcManager: McManager
 
     @Inject
@@ -45,13 +47,29 @@ class MainActivity : ComponentActivity() {
             )
         }
 
+//        lifecycleScope.launch {
+//            repeatOnLifecycle(Lifecycle.State.STARTED) {
+//                val events = scale.notifications
+//                    .shareIn(lifecycleScope, SharingStarted.Eagerly)
+//                events.collect { notification ->
+//                    when (notification) {
+//                        is McManager.Notification.OnConnectionSucceeded -> {
+//                            scale.start()
+//                        }
+//                        else -> Unit
+//                    }
+//                }
+//            }
+//        }
+
         setContent {
             SharedLibraryTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    // Observe the mc manager
+                    // Observe the scale
+//                    val showDebugDialog by scale.showDebugDialog.collectAsState(initial = false)
                     val showDebugDialog by mcManager.showDebugDialog.collectAsState(initial = false)
 
                     // Observe the shutdown manager
@@ -64,8 +82,9 @@ class MainActivity : ComponentActivity() {
                     // Show debug window
                     if (showDebugDialog)
                         DebugDialog(
-                            onSetEmulatorMode = {
+                            onRunEmulator = {
                                 mcManager.setMode(McService.Mode.Emulator)
+//                                scale.runEmulator()
                             }
                         )
 

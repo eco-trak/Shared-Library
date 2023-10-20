@@ -54,10 +54,7 @@ class MainViewModel @Inject constructor(
                     is Scale.Event.OnCalibUICabAngle -> calibUICabAngle = event.angle
                     is Scale.Event.OnProcessAngle -> processAngle = event.angle
                     is Scale.Event.OnCalibUIBoomAngle -> calibUIBoomAngle = event.angle
-                    is Scale.Event.OnUnknown -> Log.d(
-                        TAG,
-                        "Unknown message: code=${event.msg.code}, params=[${event.msg.params.joinToString(separator = ", ")}]\n")
-                    else -> Unit
+                    is Scale.Event.OnUnknown -> Log.d(TAG, "Unknown message: ${event.msg}")
                 }
             }
         }

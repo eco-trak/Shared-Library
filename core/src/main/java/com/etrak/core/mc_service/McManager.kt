@@ -4,9 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.etrak.core.mc_service.McService.Companion.ACTION_CONNECTION_FAILED
 import com.etrak.core.mc_service.McService.Companion.ACTION_CONNECTION_SUCCEEDED
 import com.etrak.core.mc_service.McService.Companion.ACTION_EMULATOR_MODE_ENABLED
@@ -26,6 +24,11 @@ class McManager(
     private val service: Class<*>?
 
 ) {
+    sealed class Notification {
+        object OnConnectionSucceeded: Notification()
+        object OnEmulatorModeEnabled : Notification()
+    }
+
     private val _showFailure = MutableStateFlow(false)
     val showDebugDialog = _showFailure.asStateFlow()
 
@@ -53,34 +56,54 @@ class McManager(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val messages = callbackFlow {
-
         Log.d(TAG, "McManager: messages")
 
-        // Receiver
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
 
-                // Send message
-                Log.d(TAG, "McManager: message: onReceive")
-                trySend(
-                    Device.Message(
-                        code = intent.getStringExtra(EXTRA_MESSAGE_CODE)!!,
-                        params = intent.getStringArrayExtra(EXTRA_MESSAGE_PARAMS)!!.toList()
-                    )
+                val msg = Device.Message(
+                    code = intent.getStringExtra(EXTRA_MESSAGE_CODE)!!,
+                    params = intent.getStringArrayExtra(EXTRA_MESSAGE_PARAMS)!!.toList()
                 )
+                Log.d(TAG, "McManager: message: onReceive (msg=$msg)")
+                trySend(msg)
             }
         }
 
-        // Register the receiver
         IntentFilter().apply {
             addAction(ON_MESSAGE)
             context.registerReceiver(receiver, this)
         }
 
         awaitClose {
-
-            // Unregister the receiver
             Log.d(TAG, "McManager: message: awaitClose")
+            context.unregisterReceiver(receiver)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val notifications = callbackFlow {
+        Log.d(TAG, "McManager: events")
+
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+
+                Log.d(TAG, "McManager: events: onReceive")
+                when (intent.action) {
+                    ACTION_CONNECTION_SUCCEEDED -> trySend(Notification.OnConnectionSucceeded)
+                    ACTION_EMULATOR_MODE_ENABLED -> trySend(Notification.OnEmulatorModeEnabled)
+                }
+            }
+        }
+
+        IntentFilter().apply {
+            addAction(ACTION_CONNECTION_SUCCEEDED)
+            addAction(ACTION_EMULATOR_MODE_ENABLED)
+            context.registerReceiver(receiver, this)
+        }
+
+        awaitClose {
+            Log.d(TAG, "McManager: events: awaitClose")
             context.unregisterReceiver(receiver)
         }
     }
