@@ -71,11 +71,9 @@ class MainActivity : ComponentActivity() {
 
                     when (notification) {
                         is McManager.Notification.OnConnectionSucceeded -> scale.start()
-                        is McManager.Notification.OnMcAttached -> {
 
-                            // Not done automatically when running in emulator mode
-                            scale.setMode(McService.Mode.Normal)
-                        }
+                        // Not done automatically when running in emulator mode
+                        is McManager.Notification.OnMcAttached -> scale.setMode(McService.Mode.Normal)
                         else -> Unit
                     }
                 }
