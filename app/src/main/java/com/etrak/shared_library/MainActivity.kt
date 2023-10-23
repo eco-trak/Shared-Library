@@ -26,6 +26,7 @@ import com.etrak.core.mc_service.McManager
 import com.etrak.core.mc_service.McService
 import com.etrak.shared_library.scale_service.DebugDialog
 import com.etrak.shared_library.scale_service.Scale
+import com.etrak.shared_library.ui.usb_console.UsbConsoleScreen
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.shareIn
@@ -95,7 +96,8 @@ class MainActivity : ComponentActivity() {
                     val countdown by shutdownManager.countdown.collectAsState(initial = DEFAULT_DURATION)
 
                     // Show the main screen
-                    MainScreen()
+//                    MainScreen()
+                    UsbConsoleScreen()
 
                     // Show debug window
                     if (showDebugDialog)

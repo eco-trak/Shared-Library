@@ -6,12 +6,15 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.collect
 import androidx.lifecycle.LifecycleService
 import com.etrak.core.R
 import kotlinx.coroutines.launch
+
+private const val TAG = "e-trak shutdown-service"
 
 class ShutdownService : LifecycleService() {
 
@@ -20,11 +23,11 @@ class ShutdownService : LifecycleService() {
      *********************************************************************************************/
     companion object {
         const val DEFAULT_DURATION = 10
-        const val SHUTDOWN_SEQUENCE_STARTED = "com.ecotrak.shared_library.SHUTDOWN_SEQUENCE_STARTED"
-        const val SHUTDOWN_SEQUENCE_COUNTDOWN = "com.ecotrak.shared_library.SHUTDOWN_SEQUENCE_COUNTDOWN"
-        const val SHUTDOWN_SEQUENCE_CANCELED = "com.ecotrak.shared_library.SHUTDOWN_SEQUENCE_CANCELED"
-        const val EXTRA_DURATION = "com.ecotrak.shared_library.EXTRA_DURATION"
-        const val EXTRA_COUNTDOWN = "com.ecotrak.shared_library.EXTRA_COUNTDOWN"
+        const val SHUTDOWN_SEQUENCE_STARTED = "com.etrak.core.shutdown_service.SHUTDOWN_SEQUENCE_STARTED"
+        const val SHUTDOWN_SEQUENCE_COUNTDOWN = "com.etrak.core.shutdown_service.SHUTDOWN_SEQUENCE_COUNTDOWN"
+        const val SHUTDOWN_SEQUENCE_CANCELED = "com.etrak.core.shutdown_service.SHUTDOWN_SEQUENCE_CANCELED"
+        const val EXTRA_DURATION = "com.etrak.core.shutdown_service.EXTRA_DURATION"
+        const val EXTRA_COUNTDOWN = "com.etrak.core.shutdown_service.EXTRA_COUNTDOWN"
 
         const val CHANNEL_ID = "shutdown_service"
         const val NOTIFICATION_ID = 1
@@ -68,25 +71,10 @@ class ShutdownService : LifecycleService() {
      * Command handlers
      *********************************************************************************************/
     private fun onStart(duration: Int) {
+        Log.d(TAG, "ShutdownService: onReceive(duration=$duration)")
 
         // Init. the timer
         timer = Timer(duration)
-
-        // Init. the accessory power gpio
-        gpio = Gpio(number = "24")
-        gpio.mode = Gpio.Mode.Input
-        gpio.registerCallback(
-            object : Gpio.GpioCallback {
-                override fun onValueChanged(value: Gpio.State) {
-
-                    // If the power is off then start the timer
-                    if (value == Gpio.State.High) timer.start()
-
-                    // If the power goes on then stop the timer
-                    else if(value == Gpio.State.Low) timer.stop()
-                }
-            }
-        )
 
         // Collect the state of the timer
         lifecycleScope.launch {
@@ -113,6 +101,24 @@ class ShutdownService : LifecycleService() {
                 }
             }
         }
+
+        // Init. the accessory power gpio
+        gpio = Gpio(number = "24")
+        gpio.mode = Gpio.Mode.Input
+        gpio.registerCallback(
+            object : Gpio.GpioCallback {
+                override fun onValueChanged(value: Gpio.State) {
+
+                    Log.d(TAG, "ShutdownService: onValueChanged(state=${value.name})")
+
+                    // If the power is off then start the timer
+                    if (value == Gpio.State.High) timer.start()
+
+                    // If the power goes on then stop the timer
+                    else if(value == Gpio.State.Low) timer.stop()
+                }
+            }
+        )
 
         // Collect the countdown of the timer
         lifecycleScope.launch {

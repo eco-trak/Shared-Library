@@ -1,8 +1,11 @@
 package com.etrak.core.shutdown_service
 
+import android.util.Log
 import java.io.DataOutputStream
 import java.io.File
 import java.util.*
+
+private const val TAG = "e-trak gpio"
 
 class Gpio(private val number: String) {
 
@@ -28,10 +31,14 @@ class Gpio(private val number: String) {
     }
 
     val value: State
-        get() = if (File("/sys/class/gpio/gpio$number/value").readText().trim() == "1")
-            State.High
-        else
-            State.Low
+        get() {
+            val tmp = if (File("/sys/class/gpio/gpio$number/value").readText().trim() == "1")
+                State.High
+            else
+                State.Low
+            Log.d(TAG, "Gpio: val value=$tmp")
+            return tmp
+        }
 
     var mode: Mode
         get() {

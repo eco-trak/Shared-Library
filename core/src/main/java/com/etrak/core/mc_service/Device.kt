@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 interface Device {
 
     data class Message(val code: String, val params: List<String>) {
-        override fun toString()= "code=$code, params=[${params.joinToString(", ")}]"
+        override fun toString()= "<$code${params.joinToString(",")}>"
     }
 
     val messages: Flow<Message>

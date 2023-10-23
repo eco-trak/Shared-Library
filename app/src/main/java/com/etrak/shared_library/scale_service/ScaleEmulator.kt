@@ -16,7 +16,7 @@ class ScaleEmulator : Device {
                         params = listOf(param.toString())
                     )
                 )
-                delay(1000)
+                delay(50)
                 param++
             }
         }
