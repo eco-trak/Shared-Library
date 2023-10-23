@@ -21,10 +21,14 @@ class UsbConsoleViewModel @Inject constructor(
 ) : ViewModel() {
 
     companion object {
-        private const val MAX_EVENTS = 10000
+        private const val MAX_EVENTS = 100
     }
 
-    private val messages = mcManager.messages.shareIn(viewModelScope, SharingStarted.Eagerly, 0)
+    private val messages = mcManager.messages
+        .shareIn(
+            viewModelScope,
+            SharingStarted.Eagerly
+        )
     private val _log = mutableStateListOf<Device.Message>()
     val log: List<Device.Message> get() = _log
 

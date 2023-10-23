@@ -22,7 +22,7 @@ class ShutdownService : LifecycleService() {
      * Constants
      *********************************************************************************************/
     companion object {
-        const val DEFAULT_DURATION = 10
+        const val DEFAULT_DURATION = 30
         const val SHUTDOWN_SEQUENCE_STARTED = "com.etrak.core.shutdown_service.SHUTDOWN_SEQUENCE_STARTED"
         const val SHUTDOWN_SEQUENCE_COUNTDOWN = "com.etrak.core.shutdown_service.SHUTDOWN_SEQUENCE_COUNTDOWN"
         const val SHUTDOWN_SEQUENCE_CANCELED = "com.etrak.core.shutdown_service.SHUTDOWN_SEQUENCE_CANCELED"

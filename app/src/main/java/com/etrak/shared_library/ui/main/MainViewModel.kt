@@ -1,6 +1,5 @@
 package com.etrak.shared_library.ui.main
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -24,7 +23,7 @@ class MainViewModel @Inject constructor(
 ): ViewModel() {
 
     // Scale events
-    private val scaleEvents = scale.events.shareIn(
+    private val events = scale.events.shareIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly
     )
@@ -45,7 +44,7 @@ class MainViewModel @Inject constructor(
     init {
 
         viewModelScope.launch {
-            scaleEvents.collect { event ->
+            events.collect { event ->
 //                Log.d(TAG, "MainViewMode: collecting event: $event")
 
                 when (event) {
