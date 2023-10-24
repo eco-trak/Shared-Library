@@ -6,6 +6,9 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -14,7 +17,6 @@ import androidx.core.app.ActivityCompat
 import com.etrak.core.shutdown_service.ShutdownManager
 import com.etrak.core.shutdown_service.ShutdownService.Companion.DEFAULT_DURATION
 import com.etrak.shared_library.shutdown_service.ShutdownSequence
-import com.etrak.shared_library.ui.main.MainScreen
 import com.etrak.shared_library.ui.theme.SharedLibraryTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -26,7 +28,9 @@ import com.etrak.core.mc_service.McManager
 import com.etrak.core.mc_service.McService
 import com.etrak.shared_library.scale_service.DebugDialog
 import com.etrak.shared_library.scale_service.Scale
-import com.etrak.shared_library.ui.usb_console.UsbConsoleScreen
+import com.etrak.shared_library.ui.debug_console.UsbConsoleScreen
+import com.etrak.shared_library.ui.theme.darkBackgroundGradient
+import com.etrak.shared_library.ui.theme.lightBackgroundGradient
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.shareIn
@@ -86,33 +90,45 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    // Observe the scale
-                    val showDebugDialog by scale.showDebugDialog.collectAsState(initial = false)
+                    val background = if (isSystemInDarkTheme())
+                        darkBackgroundGradient
+                    else
+                        lightBackgroundGradient
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(brush = background)
+                    ) {
+                        // Observe the scale
+                        val showDebugDialog by scale.showDebugDialog.collectAsState(initial = false)
 
-                    // Observe the shutdown manager
-                    val showCountdown by shutdownManager.showCountdownSequence.collectAsState(initial = false)
-                    val countdown by shutdownManager.countdown.collectAsState(initial = DEFAULT_DURATION)
-
-                    // Show the main screen
-//                    MainScreen()
-                    UsbConsoleScreen()
-
-                    // Show debug window
-                    if (showDebugDialog)
-                        DebugDialog(
-                            onRunEmulator = {
-                                scale.setMode(McService.Mode.Emulator)
-                            }
+                        // Observe the shutdown manager
+                        val showCountdown by shutdownManager.showCountdownSequence.collectAsState(
+                            initial = false
                         )
+                        val countdown by shutdownManager.countdown.collectAsState(initial = DEFAULT_DURATION)
 
-                    // Show the countdown dialog on top
-                    if (showCountdown) {
-                        ShutdownSequence(
-                            onCancelClick = {
-                                shutdownManager.cancelShutdownSequence()
-                            },
-                            countdown = countdown
-                        )
+                        // Show the main screen
+                        //                    MainScreen()
+                        UsbConsoleScreen()
+
+                        // Show debug window
+                        if (showDebugDialog)
+                            DebugDialog(
+                                onRunEmulator = {
+                                    scale.setMode(McService.Mode.Emulator)
+                                }
+                            )
+
+                        // Show the countdown dialog on top
+                        if (showCountdown) {
+                            ShutdownSequence(
+                                onCancelClick = {
+                                    shutdownManager.cancelShutdownSequence()
+                                },
+                                countdown = countdown
+                            )
+                        }
                     }
                 }
             }

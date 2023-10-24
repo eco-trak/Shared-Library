@@ -4,4 +4,9 @@
     <string name="cancel">Cancel</string>
     <string name="debug">Debug</string>
     <string name="set_emulator_mode">Set emulator mode</string>
+    <string name="print">Print</string>
+    <string name="debug_console">Debug console</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="clear">Clear</string>
 </resources>

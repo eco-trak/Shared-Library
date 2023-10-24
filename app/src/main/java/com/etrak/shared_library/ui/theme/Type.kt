@@ -10,11 +10,20 @@ import com.etrak.shared_library.R
 
 // Set of Material typography styles to start with
 val Typography = Typography(
+    defaultFontFamily = FontFamily(Font(R.font.roboto_black)),
     body1 = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp
+    ),
+    h1 = TextStyle(
+        fontWeight = FontWeight.Normal,
+        fontSize = 42.sp
+    ),
+    button = TextStyle(
+        fontWeight = FontWeight.Bold
     )
+
     /* Other default text styles to override
     button = TextStyle(
         fontFamily = FontFamily.Default,
@@ -35,7 +44,9 @@ val terminalFont = FontFamily(
 
 val terminalTypography = Typography(
     body1 = TextStyle(
-        fontFamily = terminalFont,
-        fontSize = 24.sp,
+        fontFamily = FontFamily(
+            Font(R.font.terminal)
+        ),
+        fontSize = 16.sp,
     )
 )
