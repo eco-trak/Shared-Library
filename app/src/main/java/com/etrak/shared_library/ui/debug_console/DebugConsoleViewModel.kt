@@ -29,7 +29,7 @@ class DebugConsoleViewModel @Inject constructor(
     private val currentTab = MutableStateFlow(Tab.Message)
     private val previousTab = MutableStateFlow(Tab.None)
 
-    // Flows
+    // Flow
     @OptIn(ExperimentalCoroutinesApi::class)
     private val flow = currentTab.flatMapLatest { tab ->
         when (tab) {
