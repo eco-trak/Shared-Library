@@ -1,12 +1,16 @@
 package com.etrak.shared_library.ui.debug_console
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.etrak.core.mc_service.McManager
 import com.etrak.shared_library.scale_service.Scale
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,11 +23,18 @@ class DebugConsoleViewModel @Inject constructor(
 
 ) : ViewModel() {
 
+    sealed class UiEvent {
+        data class OnError(val e: Exception) : UiEvent()
+    }
+
     enum class Tab { Message, Event, None }
 
-    companion object {
-        private const val MAX_EVENTS = 100
-    }
+    // Communication channel used to communicate with the composable
+    private val _events = Channel<UiEvent>()
+    val events = _events.receiveAsFlow()
+
+    var bufferSize by mutableStateOf(100)
+        private set
 
     // Tab
     private val currentTab = MutableStateFlow(Tab.Message)
@@ -46,7 +57,7 @@ class DebugConsoleViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             flow.collect { msg ->
-                if (_logs.size == MAX_EVENTS)
+                if (_logs.size == bufferSize)
                     _logs.removeFirst()
                 _logs += msg
             }
@@ -63,6 +74,24 @@ class DebugConsoleViewModel @Inject constructor(
     }
     fun onClearClick() {
         _logs.clear()
+    }
+    fun onBufferSizeChange(value: String) {
+        try {
+            val bufferSize = value.toInt()
+            if (bufferSize > 0) {
+
+                onStopClick()
+                onCleared()
+                this.bufferSize = bufferSize
+                onStartClick()
+
+            }
+        }
+        catch (e: Exception) {
+            viewModelScope.launch {
+                _events.send(UiEvent.OnError(e))
+            }
+        }
     }
 }
 

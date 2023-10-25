@@ -22,8 +22,8 @@ import com.etrak.shared_library.ui.theme.SharedLibraryTheme
 fun TopBar(
     @DrawableRes icon: Int,
     @StringRes text: Int,
-    onPopBackStack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onPopBackStack: () -> Unit
 ) {
     Row(
         modifier = modifier.padding(start = 10.dp, top = 25.dp, end = 10.dp, bottom = 25.dp),
@@ -60,6 +60,18 @@ fun TopBarPreview() {
             onPopBackStack = {},
             icon = R.drawable.bug,
             text = R.string.debug_console
+        )
+    }
+}
+
+@Preview(widthDp = 500)
+@Composable
+fun TopBarPreview2() {
+    SharedLibraryTheme(darkTheme = true) {
+        TopBar(
+            icon = R.drawable.bug,
+            text = R.string.debug_console,
+            onPopBackStack = {}
         )
     }
 }

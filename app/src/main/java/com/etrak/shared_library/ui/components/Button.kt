@@ -35,13 +35,12 @@ fun Button(
             }
             .background(
                 brush = if (isSystemInDarkTheme()) darkButtonBackgroundGradient else lightButtonBackgroundGradient,
-                shape = MaterialTheme.shapes.small
+                shape = buttonShape
             )
-
             .border(
                 width = 1.dp,
                 brush = if (isSystemInDarkTheme()) darkButtonBorderGradient else lightButtonBorderGradient,
-                shape = MaterialTheme.shapes.small
+                shape = buttonShape
             ),
         contentAlignment = Alignment.Center
     ) {
@@ -57,7 +56,7 @@ fun Button(
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun ButtonPreview() {
     SharedLibraryTheme(darkTheme = true) {
@@ -113,7 +112,7 @@ fun Button(
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun ButtonPreview2() {
     SharedLibraryTheme(darkTheme = true) {
@@ -125,7 +124,7 @@ fun ButtonPreview2() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun ButtonPreview3() {
     SharedLibraryTheme(darkTheme = true) {
@@ -137,7 +136,7 @@ fun ButtonPreview3() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun ButtonPreview4() {
     SharedLibraryTheme(darkTheme = true) {
@@ -149,7 +148,7 @@ fun ButtonPreview4() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun ButtonPreview5() {
     SharedLibraryTheme(darkTheme = true) {
@@ -222,7 +221,7 @@ fun Button(
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun ButtonPreview6() {
     SharedLibraryTheme(darkTheme = true) {
@@ -235,7 +234,7 @@ fun ButtonPreview6() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun ButtonPreview9() {
     SharedLibraryTheme(darkTheme = true) {

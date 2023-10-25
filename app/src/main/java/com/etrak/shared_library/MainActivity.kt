@@ -90,10 +90,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    val background = if (isSystemInDarkTheme())
-                        darkBackgroundGradient
-                    else
-                        lightBackgroundGradient
+                    val background = if (isSystemInDarkTheme()) darkBackgroundGradient else lightBackgroundGradient
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
