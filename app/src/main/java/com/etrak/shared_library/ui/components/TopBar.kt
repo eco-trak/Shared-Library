@@ -26,13 +26,13 @@ fun TopBar(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier.padding(all = 10.dp),
+        modifier = modifier.padding(start = 10.dp, top = 25.dp, end = 10.dp, bottom = 25.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             painter = painterResource(id = icon),
             contentDescription = null,
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier.size(40.dp)
         )
         Text(
             text = stringResource(id = text).uppercase(),
@@ -44,7 +44,7 @@ fun TopBar(
             painter = painterResource(id = R.drawable.back),
             contentDescription = null,
             modifier = Modifier
-                .size(48.dp)
+                .size(40.dp)
                 .clickable {
                     onPopBackStack()
                 }
