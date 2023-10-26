@@ -10,6 +10,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -25,14 +26,16 @@ import com.etrak.shared_library.ui.theme.*
 fun Button(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     Box(
         modifier = modifier
             .width(IntrinsicSize.Max)
-            .clickable {
+            .clickable(enabled = enabled) {
                 onClick()
             }
+            .alpha(if (enabled) 1f else 0.3f)
             .background(
                 brush = if (isSystemInDarkTheme()) darkButtonBackgroundGradient else lightButtonBackgroundGradient,
                 shape = buttonShape
@@ -62,7 +65,7 @@ fun ButtonPreview() {
     SharedLibraryTheme(darkTheme = true) {
         Button(
             onClick = { },
-            modifier = Modifier
+            modifier = Modifier.alpha(0.35f)
         ) {
             Row(
                 modifier = Modifier.padding(all = 10.dp),
@@ -84,11 +87,13 @@ fun Button(
     @DrawableRes icon: Int?,
     text: String?,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier
+        modifier = modifier,
+        enabled = enabled
     ) {
         Column(
             modifier = Modifier

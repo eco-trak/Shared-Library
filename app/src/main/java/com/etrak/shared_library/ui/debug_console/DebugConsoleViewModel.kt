@@ -79,12 +79,8 @@ class DebugConsoleViewModel @Inject constructor(
         try {
             val bufferSize = value.toInt()
             if (bufferSize > 0) {
-
-                onStopClick()
-                onCleared()
                 this.bufferSize = bufferSize
-                onStartClick()
-
+                _logs.clear()
             }
         }
         catch (e: Exception) {
