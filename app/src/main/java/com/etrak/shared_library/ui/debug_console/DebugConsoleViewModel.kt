@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.etrak.core.mc_service.McManager
@@ -51,7 +52,7 @@ class DebugConsoleViewModel @Inject constructor(
     }.shareIn(viewModelScope, SharingStarted.Eagerly)
 
     // Logs
-    private val _logs = mutableStateListOf<String>()
+    private var _logs = mutableStateListOf<String>()
     val logs: List<String> get() = _logs
 
     init {
@@ -75,12 +76,26 @@ class DebugConsoleViewModel @Inject constructor(
     fun onClearClick() {
         _logs.clear()
     }
+
     fun onBufferSizeChange(value: String) {
         try {
+
+            // Convert the buffer size to an integer or fail
             val bufferSize = value.toInt()
+
+            // Do not change the buffer size if it is less than one
             if (bufferSize > 0) {
+
+                // Shrink the buffer if it is too large
+                val extra = _logs.size - bufferSize
+                if (extra > 0) {
+                    val left = _logs.drop(extra)
+                    _logs.clear()
+                    _logs.addAll(left)
+                }
+
+                // Update the buffer size
                 this.bufferSize = bufferSize
-                _logs.clear()
             }
         }
         catch (e: Exception) {

@@ -6,15 +6,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -23,9 +24,9 @@ import com.etrak.shared_library.ui.components.Dialog
 import com.etrak.shared_library.ui.components.TopBar
 import com.etrak.shared_library.ui.theme.SharedLibraryTheme
 import com.etrak.shared_library.ui.theme.terminalFontColor
-import com.etrak.shared_library.ui.theme.terminalTypography
 import com.etrak.shared_library.R
 import com.etrak.shared_library.ui.components.ListItem
+import com.etrak.shared_library.ui.theme.terminalTextStyle
 import kotlinx.coroutines.flow.collect
 
 @Composable
@@ -33,7 +34,7 @@ fun Log(log: String) {
     Text(
         text = log,
         color = terminalFontColor,
-        style = terminalTypography.body1
+        style = terminalTextStyle
     )
 }
 
@@ -127,7 +128,6 @@ fun DebugConsoleContent(
             )
         }
     ) {
-
             Column(
                 modifier = Modifier.background(Color.Black)
             ) {
@@ -174,34 +174,45 @@ fun SettingsDialog(
     onBufferSizeChange: (value: String) -> Unit,
     onSave: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismissRequest) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        icon = R.drawable.buffer,
+        title = stringResource(id = R.string.buffer_size)
+    ) {
         Column(
-            modifier = Modifier
-                .padding(
-                    start = 10.dp,
-                    top = 75.dp,
-                    end = 10.dp,
-                    bottom = 75.dp
-                )
-                .width(IntrinsicSize.Max),
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(
+                space = 60.dp,
+                alignment = Alignment.CenterVertically
+            )
         ) {
             OutlinedTextField(
                 value = bufferSize.toString(),
                 onValueChange = onBufferSizeChange,
                 label = {
-                    Text(text = stringResource(id = R.string.buffer_size).uppercase())
-                }
+                    Text(text = stringResource(id = R.string.maximum).uppercase())
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
             )
-            Spacer(modifier = Modifier.height(10.dp))
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalAlignment = Alignment.End
             ) {
                 ListItem(
                     icon = R.drawable.save,
                     text = stringResource(R.string.save),
-                    onClick = onSave
+                    onClick = onSave,
+                    modifier = Modifier
+                        .height(60.dp)
+                        .width(175.dp)
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                ListItem(
+                    icon = R.drawable.close,
+                    text = stringResource(R.string.close),
+                    onClick = onDismissRequest,
+                    modifier = Modifier
+                        .height(60.dp)
+                        .width(175.dp)
                 )
             }
         }

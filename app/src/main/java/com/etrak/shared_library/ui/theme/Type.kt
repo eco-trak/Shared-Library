@@ -4,6 +4,7 @@ import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.etrak.shared_library.R
@@ -38,15 +39,15 @@ val Typography = Typography(
     */
 )
 
-val terminalFont = FontFamily(
-    Font(R.font.terminal)
+val terminalTextStyle = TextStyle(
+    fontFamily = FontFamily(
+        Font(R.font.terminal)
+    ),
+    fontSize = 16.sp,
 )
 
-val terminalTypography = Typography(
-    body1 = TextStyle(
-        fontFamily = FontFamily(
-            Font(R.font.terminal)
-        ),
-        fontSize = 16.sp,
-    )
+val dialogTitleTextStyle = TextStyle(
+    fontWeight = FontWeight.Bold,
+    fontSize = 36.sp,
 )
+
