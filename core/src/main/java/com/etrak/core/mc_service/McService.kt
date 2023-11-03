@@ -53,11 +53,9 @@ abstract class McService(
     }
 
     enum class Mode(val id: Int, @StringRes val resId: Int) {
-
         StandBy(id = 1, resId = R.string.mode_standby),
         Emulator(id = 2, resId = R.string.mode_emulator),
         Normal(id = 3, resId = R.string.mode_normal);
-
         fun toInt() = this.id
     }
 
@@ -69,13 +67,11 @@ abstract class McService(
     }
 
     private val mode = MutableStateFlow(Mode.StandBy)
-
     private val standby by lazy { StandByMode() }
     private val normal: Device by lazy { HardwareDevice(this) }
-
     private lateinit var device: Device
 
-    // When the connection status changes then switch between flows
+    // Switch between flows according to mode
     @OptIn(ExperimentalCoroutinesApi::class)
     val messages = mode.flatMapLatest { mode ->
         Log.d(TAG, "McService: messages = mode.flatMapLatest { mode($mode) ->")
@@ -92,7 +88,6 @@ abstract class McService(
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             Log.d(TAG, "McService: onReceive(${intent.action})")
-
             when (intent.action) {
                 UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
                     if (mode.value == Mode.StandBy)
@@ -117,7 +112,6 @@ abstract class McService(
 
     private fun setMode(mode: Mode) {
         Log.d(TAG, "McService: setMode($mode)")
-
         when (mode) {
             Mode.Normal -> {
                 try {
@@ -139,7 +133,6 @@ abstract class McService(
 
     private fun onStart() {
         Log.d(TAG, "McService: onStart")
-
         // Create the notification channel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -155,7 +148,6 @@ abstract class McService(
         lifecycleScope.launch {
             messages.collect { msg ->
 //                Log.d(TAG, "McService:  messages.collect { msg($msg) ->")
-
                 sendBroadcast(
                     Intent(ON_MESSAGE).apply {
                         putExtra(EXTRA_MESSAGE_CODE, msg.code)
@@ -200,7 +192,6 @@ abstract class McService(
 
     private fun onStop() {
         Log.d(TAG, "McService: onStop")
-
         unregisterReceiver(receiver)
         stopForeground(true)
         stopSelf()
@@ -208,7 +199,6 @@ abstract class McService(
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "McService: onStartCommand(${intent?.action})")
-
         // Dispatch the action to its handler
         when (intent?.action) {
             Action.Start.name -> onStart()
