@@ -67,7 +67,7 @@ abstract class McService(
     }
 
     private val mode = MutableStateFlow(Mode.StandBy)
-    private val standby by lazy { StandByMode() }
+    private val standby by lazy { StandbyMode() }
     private val normal: Device by lazy { HardwareDevice(this) }
     private lateinit var device: Device
 
@@ -75,7 +75,6 @@ abstract class McService(
     @OptIn(ExperimentalCoroutinesApi::class)
     val messages = mode.flatMapLatest { mode ->
         Log.d(TAG, "McService: messages = mode.flatMapLatest { mode($mode) ->")
-
         device = when (mode) {
             Mode.Normal -> normal
             Mode.StandBy -> standby

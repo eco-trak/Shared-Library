@@ -17,74 +17,7 @@ class HardwareDevice(private val context: Context) : Device {
     class NoUsbDriverAvailableException : Exception()
 
     private lateinit var port: UsbSerialPort
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val messages = callbackFlow {
-
-        // Register the listener
-        val serialInputOutputManager = SerialInputOutputManager(
-            port,
-            object : SerialInputOutputManager.Listener {
-                var buffer = ""
-                override fun onNewData(data: ByteArray?) {
-                    if (data != null) {
-
-                        // Append new data to the buffer
-                        buffer += String(data)
-
-                        // Find the index of the opening delimiter
-                        val lt = buffer.indexOf('<')
-                        if (lt == -1) {
-                            buffer = ""
-                            return
-                        }
-
-                        // Find the index of the closing delimiter
-                        val gt = buffer.indexOf('>', lt + 1)
-                        if (gt == -1) {
-                            return
-                        }
-
-                        // Extract the message from the buffer
-                        val msg = buffer.substring(lt + 1, gt)
-
-                        // Extract the code from the message
-                        val code = msg.take(4)
-
-                        // Extract parameters from the message
-                        val params = msg.drop(4).split(',')
-
-                        // Broadcast the message
-                        trySend(
-                            Device.Message(
-                                code = code,
-                                params = params
-                            )
-                        )
-
-                        // Remove the message from the buffer
-                        buffer = buffer.drop(gt - lt + 1)
-                    }
-                }
-                override fun onRunError(e: Exception?) {
-                }
-            }
-        )
-        serialInputOutputManager.start()
-
-        awaitClose {
-
-            // Unregister the listener
-            serialInputOutputManager.listener = null
-            serialInputOutputManager.stop()
-        }
-    }
-
-    override fun send(msg: Device.Message) {
-
-        val src = "<${msg.code}${msg.params.joinToString(separator = ",")}>"
-        port.write(src.toByteArray(), 100)
-    }
+    private var serialInputOutputManager: SerialInputOutputManager? = null
 
     override fun connect() {
 
@@ -119,9 +52,78 @@ class HardwareDevice(private val context: Context) : Device {
         usbSerialPort.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE)
 
         port = usbSerialPort
+    }
+    @OptIn(ExperimentalCoroutinesApi::class)
 
+    override val messages = callbackFlow {
+        serialInputOutputManager = SerialInputOutputManager(
+            port,
+            object : SerialInputOutputManager.Listener {
+                var buffer = ""
+                override fun onNewData(data: ByteArray?) {
+
+                    // Append new data to the buffer
+                    buffer += String(data!!)
+
+                    // Find the index of the opening delimiter
+                    val lt = buffer.indexOf('<')
+                    if (lt == -1) {
+                        buffer = ""
+                        return
+                    }
+
+                    // Find the index of the closing delimiter
+                    val gt = buffer.indexOf('>', lt + 1)
+                    if (gt == -1) {
+                        return
+                    }
+
+                    // Extract the message from the buffer
+                    val msg = buffer.substring(lt + 1, gt)
+
+                    // Extract the code from the message
+                    val code = msg.take(4)
+
+                    // Extract parameters from the message
+                    val params = msg.drop(4).split(',')
+
+                    // Broadcast the message
+                    trySend(
+                        Device.Message(
+                            code = code,
+                            params = params
+                        )
+                    )
+
+                    // Remove the message from the buffer
+                    buffer = buffer.drop(gt - lt + 1)
+                }
+                override fun onRunError(e: Exception?) {
+                }
+            }
+        )
+        serialInputOutputManager!!.start()
+        awaitClose {
+            serialInputOutputManager!!.listener = null
+            serialInputOutputManager!!.stop()
+        }
     }
 
-    override fun disconnect() {
+    override fun send(msg: Device.Message) {
+
+        val src = "<${msg.code}${msg.params.joinToString(separator = ",")}>"
+        port.write(src.toByteArray(), 100)
+    }
+
+    override fun getMessage(): Device.Message {
+        return Device.Message(code = "", params = emptyList())
+    }
+
+    override fun disconnect() {}
+
+    fun stopMessageBroadcasting() {
+        if (serialInputOutputManager != null) {
+            serialInputOutputManager!!.stop()
+        }
     }
 }

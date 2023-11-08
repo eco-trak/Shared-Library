@@ -6,6 +6,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class ScaleEmulator : Device {
+
+    override fun connect() {
+        TODO("Not yet implemented")
+    }
+
     override val messages: Flow<Device.Message> by lazy {
         flow {
             var param = 0
@@ -26,7 +31,7 @@ class ScaleEmulator : Device {
         TODO("Not yet implemented")
     }
 
-    override fun connect() {
+    override fun getMessage(): Device.Message {
         TODO("Not yet implemented")
     }
 

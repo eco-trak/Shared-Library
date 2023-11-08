@@ -60,6 +60,6 @@ class Scale(
     fun start() {
         Log.d(TAG, "Scale: start")
 
-        mcManager.send(Device.Message(code = "CD00", params = emptyList()))
+        mcManager.send(Device.Message(code = "CA00", params = emptyList()))
     }
 }

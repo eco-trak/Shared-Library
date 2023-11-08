@@ -8,9 +8,10 @@ interface Device {
         override fun toString()= "<$code${params.joinToString(",")}>"
     }
 
+    fun connect()
     val messages: Flow<Message>
     fun send(msg: Message)
-    fun connect()
+    fun getMessage() : Message
     fun disconnect()
 }
 
